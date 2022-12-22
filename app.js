@@ -2,6 +2,8 @@ const express = require('express')
 const mongoose = require('mongoose')
 const exphbs = require('express-handlebars')
 
+const Todo = require('./models/todo')
+
 const app = express()
 
 // 僅在非正式環境時使用dotenv
@@ -27,7 +29,10 @@ app.set('view engine', 'hbs')
 
 // setting routes
 app.get('/', (req, res) => {
-  res.render('index')
+  Todo.find() 
+    .lean() 
+    .then(todos => res.render('index', { todos })) 
+    .catch(error => console.error(error))
 })
 
 // listen and start the server
