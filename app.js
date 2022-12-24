@@ -4,8 +4,8 @@ const exphbs = require('express-handlebars')
 const bodyParser = require('body-parser')
 const methodOverride = require('method-override')
 
-const Todo = require('./models/todo')
-
+// require router
+const routes = require('./routes')
 const app = express()
 
 // 僅在非正式環境時使用dotenv
@@ -34,63 +34,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
 
 // setting routes
-app.get('/', (req, res) => {
-  Todo.find() 
-    .lean()
-    .sort({_id: 'asc'}) 
-    .then(todos => res.render('index', { todos })) 
-    .catch(error => console.error(error))
-})
-
-app.get('/todos/new', (req, res) => {
-  res.render('new')
-})
-
-app.post('/todos', (req, res) => {
-  const name = req.body.name
-  return Todo.create({ name })
-    .then(() => res.redirect('/'))
-    .catch(error => console.log(error))
-})
-
-app.get('/todos/:id', (req,res) => {
-  const id = req.params.id
-  return Todo.findById(id)
-    .lean()
-    .then(todo => res.render('detail', { todo }))
-    .catch(error => console.log(error))
-})
-
-// update
-app.get('/todos/:id/edit', (req, res) => {
-  const id = req.params.id
-  return Todo.findById(id)
-    .lean()  
-    .then(todo => res.render('edit', { todo }))
-    .catch(error => console.log(error))
-})
-
-app.put('/todos/:id', (req, res) => {
-  const id = req.params.id
-  const {name, isDone} = req.body
-  return Todo.findById(id)
-    .then(todo => {
-      todo.name = name
-      todo.isDone = isDone === 'on'
-      return todo.save()
-    })
-    .then(todo => res.redirect(`/todos/${id}`))
-    .catch(error => console.log(error))
-})
-
-// delete
-app.delete('/todos/:id', (req, res) => {
-  const id = req.params.id
-  return Todo.findById(id)
-    .then(todo => todo.remove())
-    .then(() => res.redirect('/'))
-    .catch(error => console.log(error))
-})
+app.use(routes)
 
 // listen and start the server
 app.listen(3000, () => {
